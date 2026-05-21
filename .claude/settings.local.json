@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(docker exec portfolio-db *)",
+      "Bash(pnpm test:run *)",
+      "Bash(npx playwright *)"
+    ]
+  }
+}
