@@ -27,6 +27,12 @@ export function errorResponse(
 }
 
 export function handleApiError(e: unknown): Response {
+  if (e instanceof Error && e.name === "UnauthorizedError") {
+    return errorResponse(401, "UNAUTHORIZED", "Authentication required");
+  }
+  if (e instanceof Error && e.name === "ForbiddenError") {
+    return errorResponse(403, "FORBIDDEN", "Insufficient permissions");
+  }
   if (e instanceof ZodError) {
     return errorResponse(400, "VALIDATION_ERROR", "Validation failed", e.flatten());
   }

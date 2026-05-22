@@ -76,6 +76,22 @@ describe("handleApiError", () => {
     expect(body.error.code).toBe("NOT_FOUND");
   });
 
+  it("maps UnauthorizedError (by name) to 401 UNAUTHORIZED", async () => {
+    const err = Object.assign(new Error("Unauthorized"), { name: "UnauthorizedError" });
+    const res = handleApiError(err);
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
+  });
+
+  it("maps ForbiddenError (by name) to 403 FORBIDDEN", async () => {
+    const err = Object.assign(new Error("Forbidden"), { name: "ForbiddenError" });
+    const res = handleApiError(err);
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error.code).toBe("FORBIDDEN");
+  });
+
   it("returns 500 for unknown errors", async () => {
     const res = handleApiError(new Error("boom"));
     expect(res.status).toBe(500);
