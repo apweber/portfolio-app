@@ -23,7 +23,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/recalculate", () => ({
-  computeJobFitScore: vi.fn().mockReturnValue(80),
+  computeJobFitScore: vi.fn().mockResolvedValue(80),
 }));
 
 import { requireAuth, UnauthorizedError } from "@/lib/auth";

@@ -64,7 +64,7 @@ export async function PATCH(req: Request, { params }: Params): Promise<Response>
     ]);
 
     if (profileWithSkills && weights) {
-      const fitScore = computeJobFitScore(updated as any, profileWithSkills, weights);
+      const fitScore = await computeJobFitScore(updated as any, profileWithSkills, weights);
       const withScore = await prisma.job.update({ where: { id }, data: { fitScore }, include: JOB_INCLUDE });
       return ok(withScore);
     }

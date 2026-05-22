@@ -1,21 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import {
-  calculateFitScore,
-  type FitInput,
-  type Proficiency,
-  type WorkPref,
-} from "@/lib/fit-score/calculate";
+import { scoreViaService } from "@/lib/fit-score/client";
+import { type FitInput, type Proficiency, type WorkPref } from "@/lib/fit-score/calculate";
 import type { Profile, Skill, FitWeights, Job, JobSkill } from "@/generated/prisma/client";
 
 type ProfileWithSkills = Profile & { skills: Skill[] };
 type JobWithSkills = Job & { requiredSkills: JobSkill[] };
 
-export function computeJobFitScore(
+function buildFitInput(
   job: JobWithSkills,
   profile: ProfileWithSkills,
   weights: FitWeights
-): number {
-  const input: FitInput = {
+): FitInput {
+  return {
     userSkills: profile.skills.map((s) => ({
       name: s.name,
       proficiency: s.proficiency as Proficiency,
@@ -35,7 +31,20 @@ export function computeJobFitScore(
       locationWeight: weights.locationWeight,
     },
   };
-  return calculateFitScore(input).score;
+}
+
+export async function computeJobFitScore(
+  job: JobWithSkills,
+  profile: ProfileWithSkills,
+  weights: FitWeights
+): Promise<number | null> {
+  const input = buildFitInput(job, profile, weights);
+  try {
+    const result = await scoreViaService(input);
+    return result.score;
+  } catch {
+    return null;
+  }
 }
 
 export async function recalculateUserJobs(userId: string): Promise<void> {
@@ -59,7 +68,7 @@ export async function recalculateUserJobs(userId: string): Promise<void> {
   await Promise.all(
     jobs.map(async (job) => {
       try {
-        const score = computeJobFitScore(job, profile, weights);
+        const score = await computeJobFitScore(job, profile, weights);
         await prisma.job.update({
           where: { id: job.id },
           data: { fitScore: score },
