@@ -5,7 +5,9 @@
       "Bash(docker exec portfolio-db *)",
       "Bash(pnpm test:run *)",
       "Bash(npx playwright *)",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm build *)"
     ]
   }
 }
