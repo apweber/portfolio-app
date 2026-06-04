@@ -7,7 +7,8 @@
       "Bash(pnpm add *)",
       "Bash(pnpm test *)",
       "Bash(pnpm build *)",
-      "Bash(FIT_SCORE_SERVICE_URL=http://localhost:3000/api/fit-score/calculate FIT_SCORE_SECRET=local-dev-secret pnpm dev *)"
+      "Bash(FIT_SCORE_SERVICE_URL=http://localhost:3000/api/fit-score/calculate FIT_SCORE_SECRET=local-dev-secret pnpm dev *)",
+      "Bash(pnpm e2e *)"
     ]
   }
 }
