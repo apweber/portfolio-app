@@ -4,10 +4,10 @@
       "Bash(pnpm install *)",
       "Bash(docker exec portfolio-db *)",
       "Bash(pnpm test:run *)",
-      "Bash(npx playwright *)",
       "Bash(pnpm add *)",
       "Bash(pnpm test *)",
-      "Bash(pnpm build *)"
+      "Bash(pnpm build *)",
+      "Bash(FIT_SCORE_SERVICE_URL=http://localhost:3000/api/fit-score/calculate FIT_SCORE_SECRET=local-dev-secret pnpm dev *)"
     ]
   }
 }
