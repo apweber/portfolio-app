@@ -11,6 +11,10 @@
     "test:run": "vitest run",
     "db:seed": "tsx prisma/seed.ts",
     "db:rls": "psql $DIRECT_URL -f prisma/rls.sql",
+    "db:status:prod": "dotenv -e .env.production.local -- pnpm prisma migrate status",
+    "db:deploy:prod": "dotenv -e .env.production.local -- pnpm prisma migrate deploy",
+    "db:rls:prod": "dotenv -e .env.production.local -- pnpm db:rls",
+    "db:seed:prod": "dotenv -e .env.production.local -- pnpm db:seed",
     "e2e": "vitest run --reporter=verbose src/integration"
   },
   "prisma": {
@@ -39,6 +43,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
     "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "jsdom": "^29.1.1",

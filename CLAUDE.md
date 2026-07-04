@@ -38,7 +38,7 @@ src/app/
   api/                      — REST API routes
     admin/jobs, admin/users — admin-only endpoints (requireAdmin())
     jobs, companies, skills, profile, fit-weights
-    fit-score/calculate     — local dev proxy for the Cloud Run scoring service
+    fit-score/calculate     — in-app scoring route (called via FIT_SCORE_SERVICE_URL)
 ```
 
 ### Authentication
@@ -60,13 +60,11 @@ import { get, post, patch, del } from "@/lib/api";
 
 ### Fit-score service
 
-Scoring is extracted into a standalone Express service (`services/fit-score/`) intended for Cloud Run deployment. The app calls it via `scoreViaService()` in `src/lib/fit-score/client.ts`, which:
-- Reads `FIT_SCORE_SERVICE_URL` + `FIT_SCORE_SECRET` env vars
-- POSTs with a `Bearer` token, retries once on failure, returns `null` score on two failures
+Scoring is served in-app by the Next.js route `src/app/api/fit-score/calculate/route.ts`, which runs `calculateFitScore()` (`src/lib/fit-score/calculate.ts`) and returns the standard `{ data, error }` envelope. It deploys on the same Vercel deployment as the rest of the app. The app calls it via `scoreViaService()` in `src/lib/fit-score/client.ts`, which:
+- Reads `FIT_SCORE_SERVICE_URL` (the app's own `/api/fit-score/calculate` URL) + `FIT_SCORE_SECRET` env vars
+- POSTs with a `Bearer` token, unwraps `.data` from the envelope, retries once on failure, returns `null` score on two failures
 
-In local dev, set `FIT_SCORE_SERVICE_URL=http://localhost:3000/api/fit-score/calculate` to route through the built-in proxy instead of Cloud Run.
-
-`services/` is excluded from the root `tsconfig.json` (it has its own) and from Vitest.
+Set `FIT_SCORE_SERVICE_URL` to the deployed app URL + `/api/fit-score/calculate` (local dev: `http://localhost:3000/api/fit-score/calculate`).
 
 ### Prisma
 

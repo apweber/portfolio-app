@@ -33,7 +33,10 @@ describe("scoreViaService", () => {
   it("returns the result on success", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(mockResult) })
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: mockResult, error: null }),
+      })
     );
     const result = await scoreViaService(mockInput);
     expect(result).toEqual(mockResult);
@@ -53,7 +56,10 @@ describe("scoreViaService", () => {
       vi.fn().mockImplementation(() => {
         callCount++;
         if (callCount === 1) return Promise.reject(new Error("Network error"));
-        return Promise.resolve({ ok: true, json: () => Promise.resolve(mockResult) });
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: mockResult, error: null }),
+        });
       })
     );
     const result = await scoreViaService(mockInput);

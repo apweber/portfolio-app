@@ -4,9 +4,8 @@
 
 - Node.js 20+, pnpm 9+
 - [Supabase](https://supabase.com) project (free tier is fine)
-- [Google Cloud](https://cloud.google.com) project with Cloud Run enabled
+- [Vercel](https://vercel.com) account (for hosting the Next.js app)
 - `psql` CLI for applying RLS policies
-- `gcloud` CLI authenticated (`gcloud auth login`)
 
 ---
 
@@ -21,7 +20,7 @@ Copy `.env.example` to `.env.local` and fill in each value.
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server-only) |
 | `DATABASE_URL` | Pooled Postgres URL (PgBouncer, port 6543) |
 | `DIRECT_URL` | Direct Postgres URL (port 5432, used for migrations) |
-| `FIT_SCORE_SERVICE_URL` | Cloud Run service URL (set after step 3) |
+| `FIT_SCORE_SERVICE_URL` | URL of the app's own scoring route, e.g. `https://<app>.vercel.app/api/fit-score/calculate` |
 | `FIT_SCORE_SECRET` | Shared bearer secret between app and fit-score service |
 | `NEXT_PUBLIC_APP_URL` | Public URL of the deployed Next.js app |
 
@@ -29,105 +28,97 @@ Copy `.env.example` to `.env.local` and fill in each value.
 
 ## 2. Database
 
-### Run migrations
+Schema is managed by **Prisma migrations** (`prisma/migrations/`). Deploys to the
+production Supabase database go through the `*:prod` scripts, which load
+`.env.production.local` (gitignored) via `dotenv-cli` — your local `.env` (dev
+Postgres) is never touched.
+
+### One-time setup
+
+1. Install the `psql` client (required by the RLS step) — e.g. `sudo dnf install -y postgresql`.
+2. Create `.env.production.local` from the template and paste the connection string
+   from **Supabase Dashboard → Connect**.
+
+   > **Use a Session or Direct connection on port 5432** for these commands —
+   > **not** the transaction pooler (`:6543`, `?pgbouncer=true`), which cannot run
+   > migrations/DDL. (The app's *runtime* `DATABASE_URL` on Vercel *does* use the
+   > `:6543` transaction pooler — that's set in Vercel env, separately.)
+
+   ```dotenv
+   # .env.production.local  (port 5432; URL-encode special chars in the password)
+   DATABASE_URL="postgresql://postgres.<ref>:<PW>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+   DIRECT_URL="postgresql://postgres.<ref>:<PW>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+   SEED_ALICE_ID="<alice-auth-uuid>"
+   SEED_ADMIN_ID="<admin-auth-uuid>"
+   ```
+
+### Deploy schema + RLS
 
 ```bash
-pnpm prisma migrate deploy
+pnpm db:status:prod   # sanity check: connects to Supabase, shows migration state
+pnpm db:deploy:prod   # applies prisma/migrations
+pnpm db:rls:prod      # applies prisma/rls.sql (auth.uid() resolves on Supabase)
 ```
 
-### Apply Row-Level Security
+> **Drift fallback:** if `db:deploy:prod` reports objects "already exist" (schema was
+> created outside Prisma), baseline it once:
+> `dotenv -e .env.production.local -- pnpm prisma migrate resolve --applied 20260522025838_init_job_tracker`, then re-run.
+
+### Seed data (optional)
+
+Create the two users in Supabase Auth (dashboard → Authentication → Users) —
+`alice@example.com` and `admin@example.com` — copy their UUIDs into
+`SEED_ALICE_ID` / `SEED_ADMIN_ID` in `.env.production.local`, then:
 
 ```bash
-pnpm db:rls          # runs: psql $DIRECT_URL -f prisma/rls.sql
-```
-
-### Seed development data (optional)
-
-Create the two seed users in Supabase Auth (dashboard → Authentication → Users),
-then copy their UUIDs into env vars:
-
-```bash
-export SEED_ALICE_ID=<alice-supabase-uuid>
-export SEED_ADMIN_ID=<admin-supabase-uuid>
-pnpm db:seed
+pnpm db:seed:prod
 ```
 
 ---
 
-## 3. Fit-score Cloud Run service
+## 3. Fit-score service
 
-The standalone scoring service lives in `services/fit-score/`.
+Scoring is served **in-app** by the Next.js route `src/app/api/fit-score/calculate/route.ts`
+— it runs on the same Vercel deployment as the rest of the app. The app calls it
+through `scoreViaService()` (`src/lib/fit-score/client.ts`), so there is no separate
+service to build or deploy.
 
-### Build and push
-
-```bash
-cd services/fit-score
-gcloud builds submit \
-  --tag gcr.io/$PROJECT_ID/fit-score-service \
-  --project $PROJECT_ID
-```
-
-### Deploy
+Set two environment variables (in Vercel for production, `.env.local` for dev):
 
 ```bash
-gcloud run deploy fit-score-service \
-  --image gcr.io/$PROJECT_ID/fit-score-service \
-  --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated \
-  --set-env-vars FIT_SCORE_SECRET=$FIT_SCORE_SECRET \
-  --project $PROJECT_ID
-```
-
-Copy the printed service URL and set it as `FIT_SCORE_SERVICE_URL` in your Next.js environment.
-
-### Local development proxy
-
-When running locally without Cloud Run, set:
-
-```bash
+# Production: point at the app's own deployed URL
+FIT_SCORE_SERVICE_URL=https://<app>.vercel.app/api/fit-score/calculate
+# Local dev: point back at the local server
 FIT_SCORE_SERVICE_URL=http://localhost:3000/api/fit-score/calculate
-FIT_SCORE_SECRET=any-local-secret
+
+# Shared bearer secret guarding the scoring route (any value; must match on both sides)
+FIT_SCORE_SECRET=your-shared-secret
 ```
 
-The internal Next.js proxy route will handle scoring locally.
+> Because the app calls its own route over HTTP, `FIT_SCORE_SERVICE_URL` must be the
+> full public URL of the deployment (not a relative path). This adds one internal
+> HTTP hop per scoring request — the accepted trade-off for keeping scoring behind a
+> stable, secret-guarded endpoint.
 
 ---
 
 ## 4. Next.js app
 
-### Vercel (recommended)
+### Vercel
 
 1. Import the repo in [vercel.com/new](https://vercel.com/new)
-2. Add all environment variables from `.env.local`
+2. Add all environment variables from `.env.local` (including
+   `FIT_SCORE_SERVICE_URL` = your Vercel app URL + `/api/fit-score/calculate`)
 3. Deploy — Vercel detects Next.js automatically
-
-### Cloud Run
-
-```bash
-# From the project root
-gcloud builds submit \
-  --tag gcr.io/$PROJECT_ID/portfolio-app \
-  --project $PROJECT_ID
-
-gcloud run deploy portfolio-app \
-  --image gcr.io/$PROJECT_ID/portfolio-app \
-  --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated \
-  --set-env-vars "$(cat .env.local | grep -v '^#' | tr '\n' ',')" \
-  --project $PROJECT_ID
-```
 
 ---
 
 ## Architecture overview
 
 ```
-Browser → Next.js (Vercel / Cloud Run)
+Browser → Next.js on Vercel
              ├── Supabase Auth  (authentication)
              ├── Supabase Postgres + RLS  (data)
-             └── fit-score Cloud Run  (scoring service)
-                    ↑
-              /api/fit-score/calculate  (local dev proxy)
+             └── /api/fit-score/calculate  (in-app scoring route,
+                    called via FIT_SCORE_SERVICE_URL)
 ```

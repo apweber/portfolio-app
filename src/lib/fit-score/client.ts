@@ -10,7 +10,8 @@ async function doRequest(url: string, secret: string | undefined, input: FitInpu
     body: JSON.stringify(input),
   });
   if (!res.ok) throw new Error(`Fit-score service error: ${res.status}`);
-  return res.json() as Promise<FitResult>;
+  const body = (await res.json()) as { data: FitResult; error: null };
+  return body.data;
 }
 
 export async function scoreViaService(input: FitInput): Promise<FitResult> {

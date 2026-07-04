@@ -16,14 +16,6 @@ pnpm db:seed
 pnpm db:rls
 ```
 
-If you change the standalone fit-score service, it has its own package and TypeScript config:
-
-```bash
-cd services/fit-score
-npm run dev
-npm run build
-```
-
 ## High-level architecture
 
 This repository is a multi-user job search tracker built with Next.js App Router, Supabase Auth, Prisma/Postgres, and a separate fit-score service.
@@ -41,12 +33,10 @@ Authentication and authorization are split across layouts and API helpers:
 
 The data model in `prisma/schema.prisma` centers on `Profile`, `Skill`, `FitWeights`, `Company`, and `Job`. Jobs belong to a user and company, and related job skills/tags are stored in `JobSkill` and `JobTag`. Row-level security SQL lives separately in `prisma/rls.sql` and is applied after migrations.
 
-Fit-score calculation spans the app and a standalone service:
+Fit-score calculation is served in-app:
 
 - App code builds scoring input in `src/lib/recalculate.ts` and calls `scoreViaService()` from `src/lib/fit-score/client.ts`.
-- Local development can proxy scoring through `src/app/api/fit-score/calculate/route.ts` by pointing `FIT_SCORE_SERVICE_URL` at that route.
-- The standalone Cloud Run-oriented service lives in `services/fit-score/`.
-- The root TypeScript config and Vitest config exclude `services/`, so service changes are not covered by the main app build/test setup.
+- Scoring runs in the Next.js route `src/app/api/fit-score/calculate/route.ts`, which invokes `calculateFitScore()` from `src/lib/fit-score/calculate.ts`. `FIT_SCORE_SERVICE_URL` points at that route (the app's own deployed URL, or `http://localhost:3000/api/fit-score/calculate` in dev).
 
 ## Key conventions
 
@@ -55,5 +45,5 @@ Fit-score calculation spans the app and a standalone service:
 - Do not instantiate `PrismaClient` directly. Reuse `src/lib/prisma.ts`, which wires Prisma through the required `PrismaPg` adapter and `DATABASE_URL`.
 - Forms use `react-hook-form` with `zodResolver`. For schemas used with `useForm<T>`, do not use Zod `.default()`; put defaults in `defaultValues` instead.
 - In form tests, `handleSubmit` passes the submit event as a second argument, so assertions on submit spies must include `expect.anything()` for that second parameter.
-- The fit-score algorithm exists in both `src/lib/fit-score/calculate.ts` and `services/fit-score/src/calculate.ts`; keep the input/output contract and scoring logic aligned when changing scoring behavior.
+- The fit-score algorithm lives in `src/lib/fit-score/calculate.ts`; `scoreViaService()` unwraps the `{ data, error }` envelope returned by the scoring route.
 - The repository uses the `@/*` path alias for `src/*`.
