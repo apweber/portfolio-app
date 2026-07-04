@@ -51,6 +51,9 @@ export default function CompaniesPage() {
   }, [debouncedQ, page]);
 
   useEffect(() => {
+    // Intentional fetch-on-mount / on-dependency-change; the setLoading inside
+    // fetchCompanies is the sanctioned way to reflect request state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCompanies();
   }, [fetchCompanies]);
 

@@ -57,6 +57,9 @@ export default function JobsPage() {
   }, [filters, page]);
 
   useEffect(() => {
+    // Intentional fetch-on-mount / on-dependency-change; the setLoading inside
+    // fetchJobs is the sanctioned way to reflect request state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobs();
   }, [fetchJobs]);
 
