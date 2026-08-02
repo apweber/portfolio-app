@@ -40,7 +40,7 @@ export function UserTable({ users, onRoleChange }: Props) {
                     onRoleChange(user.id, newRole);
                   }
                 }}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>

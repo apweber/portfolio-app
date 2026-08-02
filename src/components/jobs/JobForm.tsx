@@ -92,7 +92,7 @@ function ChipInput({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type and press Enter"
-        className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   );
@@ -134,7 +134,7 @@ export function JobForm({ initialValues, companies, onSubmit, submitLabel = "Sav
         <select
           id="companyId"
           {...register("companyId")}
-          className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyId ? "border-red-400" : "border-gray-300"}`}
+          className={`rounded-md border px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.companyId ? "border-red-400" : "border-gray-300"}`}
         >
           <option value="">Select a company…</option>
           {companies.map((c) => (
@@ -159,7 +159,7 @@ export function JobForm({ initialValues, companies, onSubmit, submitLabel = "Sav
           <select
             id="status"
             {...register("status")}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="APPLIED">Applied</option>
             <option value="PHONE_SCREEN">Phone Screen</option>
@@ -174,7 +174,7 @@ export function JobForm({ initialValues, companies, onSubmit, submitLabel = "Sav
           <select
             id="workPreference"
             {...register("workPreference")}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Any</option>
             <option value="REMOTE">Remote</option>
@@ -227,7 +227,7 @@ export function JobForm({ initialValues, companies, onSubmit, submitLabel = "Sav
           id="description"
           {...register("description")}
           rows={3}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -253,7 +253,7 @@ export function JobForm({ initialValues, companies, onSubmit, submitLabel = "Sav
           id="notes"
           {...register("notes")}
           rows={4}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Interview notes, contacts, follow-ups…"
         />
       </div>

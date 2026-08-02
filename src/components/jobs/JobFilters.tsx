@@ -60,7 +60,7 @@ export function JobFilters({ filters, companies, onChange }: Props) {
           aria-label="Filter by company"
           value={filters.companyId ?? ""}
           onChange={(e) => set("companyId", e.target.value || undefined)}
-          className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+          className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white"
         >
           <option value="">All companies</option>
           {companies.map((c) => (
@@ -75,7 +75,7 @@ export function JobFilters({ filters, companies, onChange }: Props) {
         aria-label="Work preference"
         value={filters.workPreference ?? ""}
         onChange={(e) => set("workPreference", e.target.value || undefined)}
-        className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+        className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white"
       >
         {WORK_PREFS.map(({ value, label }) => (
           <option key={value} value={value}>
@@ -88,7 +88,7 @@ export function JobFilters({ filters, companies, onChange }: Props) {
         aria-label="Sort by"
         value={filters.sort}
         onChange={(e) => set("sort", e.target.value)}
-        className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+        className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white"
       >
         <option value="fitScore">Fit Score</option>
         <option value="applicationDate">Application Date</option>

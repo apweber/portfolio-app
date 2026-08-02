@@ -80,7 +80,7 @@ export function JobDetailClient({ jobId, initialStatus, initialNotes }: Props) {
           value={status}
           onChange={(e) => handleStatusChange(e.target.value)}
           disabled={savingStatus}
-          className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         >
           {STATUSES.map(({ value, label }) => (
             <option key={value} value={value}>
@@ -105,7 +105,7 @@ export function JobDetailClient({ jobId, initialStatus, initialNotes }: Props) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={6}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Interview notes, contacts, follow-ups…"
               aria-label="Notes"
             />

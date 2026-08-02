@@ -78,7 +78,7 @@ export function SkillsManager({ initialSkills }: Props) {
                 aria-label={`Proficiency for ${skill.name}`}
                 value={skill.proficiency}
                 onChange={(e) => handleProficiencyChange(skill, e.target.value as Skill["proficiency"])}
-                className="rounded border border-gray-300 px-2 py-1 text-xs"
+                className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-900 bg-white"
               >
                 {PROFICIENCY_OPTIONS.map((p) => (
                   <option key={p} value={p}>
